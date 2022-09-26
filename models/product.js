@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+// remember that the db name is setting in .env -> MONGO_URI -> 'STORE-API'
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -35,4 +35,4 @@ const productSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model('Product', productSchema); // ('products' collection in mongoDB)
