@@ -14,8 +14,12 @@ const start = async () => {
     await Product.deleteMany();
     await Product.create(jsonProducts); // jsonProducts is an array of objects
     console.log('Success connection!');
+    // once we populate db we will exit the process
+    // global variable: process
+    process.exit(0);
   } catch (error) {
     console.log(error);
+    process.exit(1);
   }
 };
 
