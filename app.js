@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('express-async-errors'); // async errors - Documentation: https://www.npmjs.com/package/express-async-errors
 
 const express = require('express');
 const app = express();
