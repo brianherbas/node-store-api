@@ -16,7 +16,18 @@ const getAllProductsStatic = async (req, res) => {
 };
 
 const getAllProducts = async (req, res) => {
-  res.status(200).json({ msg: 'products route' });
+  // console.log(req.query); remember req.query is an object
+  const { featured } = req.query;
+  const queryObject = {};
+
+  if (featured) {
+    // create new key called 'featured' into 'queryObject'
+    // we pass the boolean we have received as 'string' to 'bool' data type
+    queryObject.featured = featured === 'true' ? true : false;
+  }
+  console.log(queryObject);
+  const products = await Product.find(queryObject);
+  res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
 
 module.exports = {
