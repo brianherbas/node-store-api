@@ -8,21 +8,21 @@ const getAllProductsStatic = async (req, res) => {
   // throw new Error('testing async errors');
 
   // Documentation: https://mongoosejs.com/docs/api.html#model_Model-find
-  const search = 'ab';
+  // const search = 'ab';
   const products = await Product.find({
     // featured: true,
     // name: 'vase table',
     // Documentation: https://www.mongodb.com/docs/manual/reference/operator/query/
     // https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
-    name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
-  });
+    // name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
+  }).sort('name -price'); // sort() Documentation: https://mongoosejs.com/docs/api.html#query_Query-sort
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
 
 const getAllProducts = async (req, res) => {
   // console.log(req.query); remember req.query is an object
   // as a side note: we can rename the the keys of our req.query as the name we want
-  const { featured, company, name } = req.query;
+  const { featured, company, name, sort } = req.query;
   const queryObject = {};
 
   if (featured) {
@@ -38,8 +38,17 @@ const getAllProducts = async (req, res) => {
     queryObject.name = { $regex: name, $options: 'i' };
   }
 
-  console.log(queryObject);
-  const products = await Product.find(queryObject);
+  // console.log(queryObject);
+  let result = Product.find(queryObject);
+  if (sort) {
+    // console.log(sort);
+    // if user want to sort by, eg: 'name,-price' then to fix query syntax:
+    const sortList = sort.split(',').join(' '); // 'name,-price' to 'name -price'
+    result = result.sort(sortList);
+  } else {
+    result = result.sort('createAt');
+  }
+  const products = await result;
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
 
