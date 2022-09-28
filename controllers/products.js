@@ -8,16 +8,21 @@ const getAllProductsStatic = async (req, res) => {
   // throw new Error('testing async errors');
 
   // Documentation: https://mongoosejs.com/docs/api.html#model_Model-find
+  const search = 'ab';
   const products = await Product.find({
     // featured: true,
-    name: 'vase table',
+    // name: 'vase table',
+    // Documentation: https://www.mongodb.com/docs/manual/reference/operator/query/
+    // https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
+    name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
   });
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
 
 const getAllProducts = async (req, res) => {
   // console.log(req.query); remember req.query is an object
-  const { featured, company } = req.query;
+  // as a side note: we can rename the the keys of our req.query as the name we want
+  const { featured, company, name } = req.query;
   const queryObject = {};
 
   if (featured) {
@@ -27,6 +32,10 @@ const getAllProducts = async (req, res) => {
   }
   if (company) {
     queryObject.company = company;
+  }
+  if (name) {
+    // queryObject.name = name;
+    queryObject.name = { $regex: name, $options: 'i' };
   }
 
   console.log(queryObject);
