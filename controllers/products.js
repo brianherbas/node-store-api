@@ -17,7 +17,7 @@ const getAllProductsStatic = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   // console.log(req.query); remember req.query is an object
-  const { featured } = req.query;
+  const { featured, company } = req.query;
   const queryObject = {};
 
   if (featured) {
@@ -25,6 +25,10 @@ const getAllProducts = async (req, res) => {
     // we pass the boolean we have received as 'string' to 'bool' data type
     queryObject.featured = featured === 'true' ? true : false;
   }
+  if (company) {
+    queryObject.company = company;
+  }
+
   console.log(queryObject);
   const products = await Product.find(queryObject);
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
