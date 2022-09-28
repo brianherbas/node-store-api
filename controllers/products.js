@@ -15,14 +15,15 @@ const getAllProductsStatic = async (req, res) => {
     // Documentation: https://www.mongodb.com/docs/manual/reference/operator/query/
     // https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
     // name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
-  }).sort('name -price'); // sort() Documentation: https://mongoosejs.com/docs/api.html#query_Query-sort
+  }).select('name price'); // select() Documentation: https://mongoosejs.com/docs/api.html#query_Query-select
+  // .sort('name -price'); // sort() Documentation: https://mongoosejs.com/docs/api.html#query_Query-sort
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
 
 const getAllProducts = async (req, res) => {
   // console.log(req.query); remember req.query is an object
   // as a side note: we can rename the the keys of our req.query as the name we want
-  const { featured, company, name, sort } = req.query;
+  const { featured, company, name, sort, fields } = req.query;
   const queryObject = {};
 
   if (featured) {
@@ -48,6 +49,12 @@ const getAllProducts = async (req, res) => {
   } else {
     result = result.sort('createAt');
   }
+
+  if (fields) {
+    const fieldsList = fields.split(',').join(' ');
+    result = result.select(fieldsList);
+  }
+
   const products = await result;
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
