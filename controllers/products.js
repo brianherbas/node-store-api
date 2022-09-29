@@ -15,7 +15,12 @@ const getAllProductsStatic = async (req, res) => {
     // Documentation: https://www.mongodb.com/docs/manual/reference/operator/query/
     // https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
     // name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
-  }).select('name price'); // select() Documentation: https://mongoosejs.com/docs/api.html#query_Query-select
+  })
+    .sort('name')
+    .select('name price');
+  // .limit(10) // limit(): Specifies the maximum number of documents the query will return. https://mongoosejs.com/docs/api.html#query_Query-limit
+  // .skip(2); // skip(): Specifies the number of documents to skip. https://mongoosejs.com/docs/api.html#query_Query-skip
+  // select() Documentation: https://mongoosejs.com/docs/api.html#query_Query-select
   // .sort('name -price'); // sort() Documentation: https://mongoosejs.com/docs/api.html#query_Query-sort
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
 };
@@ -54,6 +59,16 @@ const getAllProducts = async (req, res) => {
     const fieldsList = fields.split(',').join(' ');
     result = result.select(fieldsList);
   }
+
+  // pagination:
+  const page = Number(req.query.page) || 1; // by default = 1
+  const limit = Number(req.query.limit) || 10; // by default = 10
+  const skip = (page - 1) * limit;
+  // if request -> "...&limit=3&page=1" then 'skip' = 0
+  // if request -> "...&limit=3&page=2" then 'skip' = 3
+  // if request -> "...&limit=3&page=3" then 'skip' = 6
+  // and on and on and on...
+  result = result.skip(skip).limit(limit);
 
   const products = await result;
   res.status(200).json({ products, nbHits: products.length }); // nbHits: "number of hits"
