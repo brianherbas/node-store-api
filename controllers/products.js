@@ -15,8 +15,13 @@ const getAllProductsStatic = async (req, res) => {
     // Documentation: https://www.mongodb.com/docs/manual/reference/operator/query/
     // https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
     // name: { $regex: search, $options: 'i' }, // all the items there is at least an 'ab'
+    price: { $gt: 30 },
+    //(gt->"greater than"):
+    // https://www.mongodb.com/docs/manual/reference/operator/query/gt/#-gt
+    // https://mongoosejs.com/docs/api.html#query_Query-gt
+    //  https://www.mongodb.com/docs/manual/reference/operator/query/#query-selectors
   })
-    .sort('name')
+    .sort('price')
     .select('name price');
   // .limit(10) // limit(): Specifies the maximum number of documents the query will return. https://mongoosejs.com/docs/api.html#query_Query-limit
   // .skip(2); // skip(): Specifies the number of documents to skip. https://mongoosejs.com/docs/api.html#query_Query-skip
@@ -28,7 +33,7 @@ const getAllProductsStatic = async (req, res) => {
 const getAllProducts = async (req, res) => {
   // console.log(req.query); remember req.query is an object
   // as a side note: we can rename the the keys of our req.query as the name we want
-  const { featured, company, name, sort, fields } = req.query;
+  const { featured, company, name, sort, fields, numericFilters } = req.query;
   const queryObject = {};
 
   if (featured) {
@@ -43,8 +48,48 @@ const getAllProducts = async (req, res) => {
     // queryObject.name = name;
     queryObject.name = { $regex: name, $options: 'i' };
   }
+  if (numericFilters) {
+    const operatorMap = {
+      // https://www.mongodb.com/docs/manual/reference/operator/query/#query-selectors
+      // https://mongoosejs.com/docs/api.html#Query
+      // "filter on a specific numerical condition" https://hn.algolia.com/api
+      '>': '$gt',
+      '>=': '$gte',
+      '=': '$eq',
+      '<': '$lt',
+      '<=': '$lte',
+    };
+    // regEx(regular expression): https://stackoverflow.com/questions/43079182/how-to-find-logic-operators-in-string-with-regex
+    const regEx = /\b(<|>|>=|=|<|<=)\b/g;
+    // https://www.w3schools.com/jsref/jsref_replace.asp
+    let filters = numericFilters.replace(
+      regEx,
+      (match) => `-${operatorMap[match]}-` // https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_replace4
+    );
+    // SAME AS ABOVE(but insteas of using arrow function, we use anonymous function):
+    /* let filters = numericFilters.replace(regEx, function (match) {
+      return `-${operatorMap[match]}-`;
+    }); */
+    console.log(numericFilters);
+    console.log(filters);
 
-  // console.log(queryObject);
+    const options = ['price', 'rating'];
+    filters = filters.split(',');
+    console.log(filters, '---------');
+    filters.forEach((item) => {
+      // console.log(item.split('-'));
+      // array destructuring:
+      const [field, operator, value] = item.split('-');
+      if (options.includes(field)) {
+        // dynamic object keys:
+        queryObject[field] = { [operator]: Number(value) };
+        console.log(queryObject);
+      }
+    });
+  }
+  console.log('finally:');
+  console.log(queryObject);
+
   let result = Product.find(queryObject);
   if (sort) {
     // console.log(sort);
